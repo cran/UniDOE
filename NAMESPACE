@@ -1,0 +1,7 @@
+useDynLib(UniDOE, .registration = TRUE)
+
+exportPattern("^[[:alpha:]]+")
+
+importFrom(Rcpp, evalCpp)
+importFrom("graphics","abline","axis","box","grid","layout","lines","mtext","par",
+           "plot","plot.new","plot.window","text","title")
