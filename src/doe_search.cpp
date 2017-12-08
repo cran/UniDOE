@@ -15,7 +15,6 @@
 #include "doe_CL2.h"
 using namespace std;
 #define DEBUG 0
-
 typedef struct
 {
 	char type;
@@ -302,11 +301,11 @@ xlevel.levels[*] : number of levels in a column
 */
 int get_level_pairs(int ncol,int npairs)
 {
-	int i,j,nl,ncp,m,total,tk,*indx,*spairs,maxsch,k;
+	int i,j,nl,/*ncp,*/m,total,tk,*indx,*spairs,maxsch,k;
   //unsigned int *indx;
-	char flag=0;
+	//char flag=0;
 	ptab.type=0;
-	ncp=ptab.ncp=xlevel.entries[ncol];
+	/*ncp=*/ptab.ncp=xlevel.entries[ncol];
 	nl=xlevel.levels[ncol];
   total=nl*(nl-1)/2;
 	if(total==0) {ptab.size=0; return(0);}
@@ -422,7 +421,7 @@ int get_element_pairs(int ncol,int npairs)
 
 int get_element_pairs_balanced(int ncol,int npairs)
 {
-	int i,j,t,nl,maxsch,tk1,ttk,i1,j1,ipdx;
+	int i,j,t,nl,maxsch,tk1,ttk,i1,j1,ipdx=0;
 	int ne,total,total1,tk,k,m,*spairs,*indx,nxvl,nexvl,nexvl2;
 
 	ptab.type=1; ptab.ncp=1;
@@ -708,11 +707,11 @@ double find_exchange(int ncol,double cur_obj)
 int get_level_set(int ncol,int npm)
 {
 	int *tmp1,*tmp2;
-	int i,nl,ne,k;
+	int i,nl,/*ne,*/k;
 	nl=xlevel.levels[ncol];
 	tmp1=NewIVector(nl);
 	pmtab.type=0;
-	ne=pmtab.ne=xlevel.entries[ncol];
+	/*ne=*/pmtab.ne=xlevel.entries[ncol];
     pmtab.size=MIN(npm,nl);
 	//permutation should be no less than 3
 	if(pmtab.size<=2)  {pmtab.size=0; return(0);}
@@ -740,7 +739,7 @@ int get_level_set(int ncol,int npm)
 int get_element_set(int ncol,int npm,int level)
 {
 	int *tmp1,*tmp;
-	int i,j,k,t,size,ne,nl,np_lev,ix;
+	int i,j,k,t,size,ne,nl,np_lev,ix=0;
 	pmtab.type=1;
 	pmtab.ne=1;
 //////////////
@@ -755,19 +754,6 @@ int get_element_set(int ncol,int npm,int level)
 	nl=xlevel.levels[ncol];
 
 	tmp1=NewIVector(ne);
-/*  if(issymm)
-			for(i=0;i<ne;i++) tmp1[i]=((Random()>=0.5)?i:nnew-i-1);
-		else
-		{
-			//one group level
-			if(nl==1) t=0;
-			//work on given group level
-			else if(level>=0) t=MIN(level,nl-1)*ne;
-			//work on a random group level
-			else t=(int)(nl*Random())*ne;
-			for(i=0;i<ne;i++) tmp1[i]=t+i;
-		}
-*/
 
 	//one group level
 	if(nl==1) t=0;
@@ -1006,7 +992,7 @@ double get_element_symm_permute(int ncol,int npm,int nsets)
 
 double find_permute(int ncol,int npml,int npme,int nsets)
 {
-	double perm_obj;
+	double perm_obj=0;
 	if(xlevel.levels[ncol]>1) get_level_permute(ncol,npml,nsets);
 
 	if(!xinfo.isbalanced[ncol]||xlevel.levels[ncol]!=xinfo.nxvl[ncol])
@@ -1019,7 +1005,7 @@ double find_permute(int ncol,int npml,int npme,int nsets)
 double full_permute(int nsets)
 {
 	int i,j;
-	double perm_obj,bst_obj;
+	double perm_obj=0,bst_obj;
 	bst_obj=criteria();
 	for(i=0;i<nsets;i++)
 	{
@@ -1058,7 +1044,7 @@ int get_ncol(char isrnd)
 std::vector<double> soat_search(double **x)
 {
 	double old_global_obj,new_obj,th,prob_ratio,alpha1=1.2,alpha2=0.8,cprob=0,prob=0; //fixed
-	int i,ncol,nochange=0,approx=0;
+	int i,ncol,nochange=0;
 	std::vector<double> return_list;
 	clock_t start;
 
@@ -1098,12 +1084,12 @@ std::vector<double> soat_search(double **x)
 				}
 			}
 
-//////////////////////To avoid too many iterations in running experiments, should be deleted when released////////////////////
-			 if(return_list.size() >= 300000){
+//////////////////////should be deleted when released////////////////////
+/*			 if(return_list.size() >= 300000){
 			   return_list.push_back(global_obj);
 			   return(return_list);
 			 }
-//////////////////////To avoid too many iterations in running experiments, should be deleted when released////////////////////
+*//////////////////////should be deleted when released////////////////////
 
 		}
 		if(old_global_obj-global_obj<tol) nochange=1;
@@ -1133,13 +1119,10 @@ std::vector<double> soat_search(double **x)
 std::vector<double> search(double **x)
 {
   std::vector<double> final_obj;
-  double objt,in_obj;
-	clock_t start;
-	start = clock();
+  double objt;
 	ntotal=0;
 	niter=0;
 
-	in_obj=criteria();
 	global_obj=obj=criteria();
 	criteria_x(x);
 	objt=ABS(obj)+EPS;
@@ -1176,10 +1159,10 @@ long get_ntotal()
 
 void updateNepairs(double alpha)
 {
-	int i,run = nnew,level = xinfo.nxvl[0],factor = nv,nexvl = nnew/xinfo.nxvl[0];
+	int i,run = nnew,level = xinfo.nxvl[0],nexvl = nnew/xinfo.nxvl[0];
 	int J = run*nexvl*(level-1)/2;
 	#if DEBUG
-		printf("In search.cpp, updateNepairs : run = %d; level = %d; factor = %d,nexvl = %d; J = %d\n",run,level,factor,nexvl,J);
+		//printf("In search.cpp, updateNepairs : run = %d; level = %d; factor = %d,nexvl = %d; J = %d\n",run,level,factor,nexvl,J);
 	#endif
 	for(i=0; i<nv; i++)
 	{

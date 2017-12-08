@@ -193,13 +193,12 @@ return(cm);
 */
 MATRIX FArray2Matrix(void *cm)
 {
-int row,col,type,ElementSize,i,j;
+int row,col,type,i,j;
 MATRIX m;
 if(cm==0) return(0);
 row=((int *)cm)[-3];
 col=((int *)cm)[-2];
 type=((int *)cm)[-1];
-ElementSize=GetTypeSize(type);
 m=NewMatrix(type,row,col);
 if(!m) {MatrixErrorCode=MEM_ERROR; return (0);}
 switch(type)
@@ -234,10 +233,9 @@ DMATRIX FArray2DMatrix2(double *cm,int row,int col)
 
 MATRIX FArray2Matrix2(void *cm,int row,int col,int type)
 {
-int ElementSize,i,j;
+int i,j;
 MATRIX m;
 if(cm==0) return(0);
-ElementSize=GetTypeSize(type);
 m=NewMatrix(type,row,col);
 if(!m) {MatrixErrorCode=MEM_ERROR; return (0);}
 switch(type)
@@ -269,13 +267,13 @@ return(m);
 */
 MATRIX CArray2Matrix(void *cm)
 {
-int row,col,type,ElementSize,i,j;
+int row,col,type,/*ElementSize,*/i,j;
 MATRIX m;
 if(cm==0) return(0);
 row=((int *)cm)[-3];
 col=((int *)cm)[-2];
 type=((int *)cm)[-1];
-ElementSize=GetTypeSize(type);
+//ElementSize=GetTypeSize(type);
 m=NewMatrix(type,row,col);
 if(!m) {MatrixErrorCode=MEM_ERROR; return (0);}
 switch(type)

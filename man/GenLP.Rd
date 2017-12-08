@@ -1,11 +1,11 @@
-\name{LP}
-\alias{LP}
-\title{Improve design with level permutation}
+\name{GenLP}
+\alias{GenLP}
+\title{Generating uniform designs by level permutation}
 \usage{
-  LP( X0, crit, maxiter, hits_ratio, vis)
+  GenLP(X0, crit, maxiter, hits_ratio, vis)
 }
 \description{
-  This function aims at improving current design using exhaustive level permutation.
+Function for generating uniform designs by level permutation. It can be also used to improve a user-specified design with randomized level permutation.
 }
 \arguments{
 \item{X0}{Current design }
@@ -21,7 +21,7 @@
 \item{maxiter}{a positive integer  R  object}
 
 
-\item{hits_ratio}{an float R object. Default value is 0.1, which is the ratio to accept changes of design in inner for loop. Details can be checked in (Zhang, A. and Li, H. (2017). UniDOE: an R package for uniform design construction via stochastic optimization.)}
+\item{hits_ratio}{an float R object. Default value is 0.1, which is the ratio to accept changes of design in inner for loop. Details can be checked in (Zhang, A. and Li, H. (2017). UniDOE: An R package for constructing uniform design of experiments via stochastic and adaptive threshold accepting algorithm. Technical Report.)}
 
 \item{vis}{an boolean R object. If true, plot the criterion value sequence.}
 
@@ -31,7 +31,7 @@
 }
 
 \author{
-   Aijun Zhang, Haoyu Li
+   Aijun Zhang, Haoyu Li, Shijie Quan
 }
 \references{
  Zhang, A. and Li, H. (2017). UniDOE: An R package for constructing uniform design of experiments via stochastic and adaptive threshold accepting algorithm. Technical Report.
@@ -42,7 +42,7 @@
   n=27#(must be multiples of q)
   s=13
   q=3
-  crit = "MD2"#(Mixture L2 criteria)
-  list1=UDC(n,s,q,crit=crit,maxiter=100)
-  LP_list = LP(list1$final_design,vis=TRUE,maxiter=100)
+  crit = "MD2" #(Mixture L2 criteria)
+  res1 = GenUD(n,s,q,crit=crit,maxiter=100)
+  res2 = GenLP(res1$final_design,vis=TRUE, maxiter=100) # To improve ...
 }

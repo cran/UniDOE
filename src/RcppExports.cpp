@@ -5,22 +5,22 @@
 
 using namespace Rcpp;
 
-// StoEval
-double StoEval(NumericMatrix X0, int q, int crit);
-RcppExport SEXP _UniDOE_StoEval(SEXP X0SEXP, SEXP qSEXP, SEXP critSEXP) {
+// CritEval
+double CritEval(NumericMatrix X0, int q, int crit);
+RcppExport SEXP _UniDOE_CritEval(SEXP X0SEXP, SEXP qSEXP, SEXP critSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericMatrix >::type X0(X0SEXP);
     Rcpp::traits::input_parameter< int >::type q(qSEXP);
     Rcpp::traits::input_parameter< int >::type crit(critSEXP);
-    rcpp_result_gen = Rcpp::wrap(StoEval(X0, q, crit));
+    rcpp_result_gen = Rcpp::wrap(CritEval(X0, q, crit));
     return rcpp_result_gen;
 END_RCPP
 }
-// StoUDC
-List StoUDC(int n, int s, int q, StringVector init, NumericMatrix initX, int crit, int maxiter, double hits_ratio);
-RcppExport SEXP _UniDOE_StoUDC(SEXP nSEXP, SEXP sSEXP, SEXP qSEXP, SEXP initSEXP, SEXP initXSEXP, SEXP critSEXP, SEXP maxiterSEXP, SEXP hits_ratioSEXP) {
+// SATA_UD
+List SATA_UD(int n, int s, int q, StringVector init, NumericMatrix initX, int crit, int maxiter, double hits_ratio);
+RcppExport SEXP _UniDOE_SATA_UD(SEXP nSEXP, SEXP sSEXP, SEXP qSEXP, SEXP initSEXP, SEXP initXSEXP, SEXP critSEXP, SEXP maxiterSEXP, SEXP hits_ratioSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -32,13 +32,13 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type crit(critSEXP);
     Rcpp::traits::input_parameter< int >::type maxiter(maxiterSEXP);
     Rcpp::traits::input_parameter< double >::type hits_ratio(hits_ratioSEXP);
-    rcpp_result_gen = Rcpp::wrap(StoUDC(n, s, q, init, initX, crit, maxiter, hits_ratio));
+    rcpp_result_gen = Rcpp::wrap(SATA_UD(n, s, q, init, initX, crit, maxiter, hits_ratio));
     return rcpp_result_gen;
 END_RCPP
 }
-// StoAUDC
-List StoAUDC(NumericMatrix XP, int n, int s, int q, StringVector init, NumericMatrix initX, int crit, int maxiter, double hits_ratio);
-RcppExport SEXP _UniDOE_StoAUDC(SEXP XPSEXP, SEXP nSEXP, SEXP sSEXP, SEXP qSEXP, SEXP initSEXP, SEXP initXSEXP, SEXP critSEXP, SEXP maxiterSEXP, SEXP hits_ratioSEXP) {
+// SATA_AUD
+List SATA_AUD(NumericMatrix XP, int n, int s, int q, StringVector init, NumericMatrix initX, int crit, int maxiter, double hits_ratio);
+RcppExport SEXP _UniDOE_SATA_AUD(SEXP XPSEXP, SEXP nSEXP, SEXP sSEXP, SEXP qSEXP, SEXP initSEXP, SEXP initXSEXP, SEXP critSEXP, SEXP maxiterSEXP, SEXP hits_ratioSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -51,13 +51,13 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type crit(critSEXP);
     Rcpp::traits::input_parameter< int >::type maxiter(maxiterSEXP);
     Rcpp::traits::input_parameter< double >::type hits_ratio(hits_ratioSEXP);
-    rcpp_result_gen = Rcpp::wrap(StoAUDC(XP, n, s, q, init, initX, crit, maxiter, hits_ratio));
+    rcpp_result_gen = Rcpp::wrap(SATA_AUD(XP, n, s, q, init, initX, crit, maxiter, hits_ratio));
     return rcpp_result_gen;
 END_RCPP
 }
-// StoLP
-List StoLP(NumericMatrix X0, int q, int crit, int maxiter, double hits_ratio);
-RcppExport SEXP _UniDOE_StoLP(SEXP X0SEXP, SEXP qSEXP, SEXP critSEXP, SEXP maxiterSEXP, SEXP hits_ratioSEXP) {
+// SATA_LP
+List SATA_LP(NumericMatrix X0, int q, int crit, int maxiter, double hits_ratio);
+RcppExport SEXP _UniDOE_SATA_LP(SEXP X0SEXP, SEXP qSEXP, SEXP critSEXP, SEXP maxiterSEXP, SEXP hits_ratioSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -66,16 +66,16 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type crit(critSEXP);
     Rcpp::traits::input_parameter< int >::type maxiter(maxiterSEXP);
     Rcpp::traits::input_parameter< double >::type hits_ratio(hits_ratioSEXP);
-    rcpp_result_gen = Rcpp::wrap(StoLP(X0, q, crit, maxiter, hits_ratio));
+    rcpp_result_gen = Rcpp::wrap(SATA_LP(X0, q, crit, maxiter, hits_ratio));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_UniDOE_StoEval", (DL_FUNC) &_UniDOE_StoEval, 3},
-    {"_UniDOE_StoUDC", (DL_FUNC) &_UniDOE_StoUDC, 8},
-    {"_UniDOE_StoAUDC", (DL_FUNC) &_UniDOE_StoAUDC, 9},
-    {"_UniDOE_StoLP", (DL_FUNC) &_UniDOE_StoLP, 5},
+    {"_UniDOE_CritEval", (DL_FUNC) &_UniDOE_CritEval, 3},
+    {"_UniDOE_SATA_UD", (DL_FUNC) &_UniDOE_SATA_UD, 8},
+    {"_UniDOE_SATA_AUD", (DL_FUNC) &_UniDOE_SATA_AUD, 9},
+    {"_UniDOE_SATA_LP", (DL_FUNC) &_UniDOE_SATA_LP, 5},
     {NULL, NULL, 0}
 };
 

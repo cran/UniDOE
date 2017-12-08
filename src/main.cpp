@@ -29,18 +29,16 @@ void free_options();
 void free_critopt();
 void initialize_pars(int nv);
 int check_pars(int nv,int nnew);
-void err_exit(const char *msg);
 NumericMatrix Generate_init_matrix(StringVector opt, int n, int s, int q,NumericMatrix initX);
 int myrandom (int i);
 
 
 // [[Rcpp::export]]
-List StoUDC(int n, int s, int q, StringVector init, NumericMatrix initX, int crit, int maxiter, double hits_ratio)
+List SATA_UD(int n, int s, int q, StringVector init, NumericMatrix initX, int crit, int maxiter, double hits_ratio)
 {
-  char err=0;
   List lst;
-  int nsamp,nv,np=0,i,j,nv1,flag,orth;
-  double *x0,*xp,*xg,critobj,**rang,critobj0,search_time;
+  int nsamp,nv,np=0,i,j,orth;
+  double critobj,**rang=NULL,critobj0,search_time;
   std::vector<double> critobj_vector;
   clock_t start;
   NumericMatrix InputX,return_matrix;
@@ -63,7 +61,6 @@ List StoUDC(int n, int s, int q, StringVector init, NumericMatrix initX, int cri
   if(initX.ncol()>1&& as<string>(init) == "orth") orth=initX.ncol();
   else orth=0;
   for(i=0;i<nv;i++) options.colweight[i]=i<orth?0:options.colweight[i];//{ critopt.scale[i]=i<orth?0:critopt.scale[i];}
-	//if(check_pars(nv,nsamp)==-1) cout<<"Error in inputs."<<endl;
   check_pars(nv,nsamp);
   //Some input judgements are omitted;
   create_xinfo(x,nsamp,np,nv);
@@ -104,11 +101,10 @@ List StoUDC(int n, int s, int q, StringVector init, NumericMatrix initX, int cri
 }
 
 // [[Rcpp::export]]
-List StoAUDC( NumericMatrix XP,int n, int s, int q, StringVector init, NumericMatrix initX, int crit, int maxiter, double hits_ratio)
+List SATA_AUD( NumericMatrix XP,int n, int s, int q, StringVector init, NumericMatrix initX, int crit, int maxiter, double hits_ratio)
 {
-  char err=0;
-  int nv=s,nnew=n,nsamp,np=XP.nrow(),i,j,nv1=XP.ncol(),flag,orth,debug=0;
-  double *x0,*xp,*xg,critobj,**rang,critobj0,search_time;
+  int nv=s,nnew=n,nsamp,np=XP.nrow(),i,j,orth;
+  double critobj,**rang=NULL,critobj0,search_time;
   std::vector<double> critobj_vector;
   clock_t start;
   NumericMatrix InputX(n,s),Init_matrix(n+np,s),return_matrix;
@@ -170,13 +166,12 @@ List StoAUDC( NumericMatrix XP,int n, int s, int q, StringVector init, NumericMa
 
 
 // [[Rcpp::export]]
-List StoLP(NumericMatrix X0, int q, int crit, int maxiter, double hits_ratio)
+List SATA_LP(NumericMatrix X0, int q, int crit, int maxiter, double hits_ratio)
 {
   List lst;
   clock_t start;
-  char err=0;
-  int nsamp,nv,np=0,i,j,nv1,flag,orth;
-  double *x0,*xp,*xg,critobj,**rang,critobj0,search_time;
+  int nsamp,nv,np=0,i,j;
+  double critobj,**rang=NULL,critobj0,search_time;
   std::vector<double> critobj_vector;
   NumericMatrix InputX,return_matrix;
   InputX = X0;
@@ -249,16 +244,6 @@ void create_critopt(int nv)
 
 void initialize_pars(int nv)
 {
-  /*
-  options.maxpairs is J in paper, i.e. number of exchanges searched in one inner iteration.
-  options.maxcol is maximum number of inner loops in paper.(default is at least 4 * nb.of factors and <= 100)
-  options.maxiter is maximum number of outer loops in paper.
-  options.israndpairs controls whether it's full level permutation or not.
-  options.israndpairs = 1, then MIN(({C^q_2}+1)/2,options.maxpairs) level permutations
-                                occur in a column. i.e. At most half of full permutation.
-  options.israndpairs = 0, then full permutation occurs in a column.
-                                default of options.israndpairs = 1
-  */
 	int i;
 	critopt.type=-1;	    critopt.ismax=-1;
 	critopt.npars[0]=-1;   critopt.npars[1]=-1;
@@ -281,17 +266,6 @@ void initialize_pars(int nv)
     options.colweight[i]=-1;
   }
 
-}
-
-void err_exit(const char *msg)
-{
-  Environment base("package:base");
-  Function warning = base["warning"];
-	free_options();
-	FreeDMatrix(x);
-	free_critopt();
-	free_xinfo();
-	warning(msg);
 }
 
 void free_options()
@@ -345,14 +319,12 @@ int check_pars(int nv,int nnew)
 
 NumericMatrix Generate_init_matrix(StringVector opt, int n, int s, int q, NumericMatrix initX)
 {
-  int i,j,repli;
+  int i,j;
   //std::srand( unsigned (std::time(0)) );
   std::vector<int> col;
   NumericMatrix return_matrix  = NumericMatrix(n,s);
   string option = as<string>(opt);
 
-  repli = n/q;
-  //if(repli != 1.0*n/q) cout<<"Error in input n and q."<<endl;
   for(i=1;i<=n;i++) col.push_back( (i%q)+1 );
   for(i=0;i<s;i++)
   {

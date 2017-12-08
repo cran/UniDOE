@@ -1,8 +1,8 @@
-\name{Eval}
-\alias{Eval}
-\title{Evaluate discrepency of matrix}
+\name{DesignEval}
+\alias{DesignEval}
+\title{Evaluate design in terms of criteria}
 \usage{
-Eval(X0,crit)
+DesignEval(X0,crit)
 }
 \description{
   This function takes matrix X0,q and crit to output the criterion value.
@@ -14,7 +14,9 @@ Eval(X0,crit)
 
               "MD2" -- MD2
 
-              "CL2" -- CL2
+              "CD2" -- CD2
+
+              "maximin" -- maximin
 
               Default: "MD2"}
 }
@@ -23,7 +25,7 @@ Eval(X0,crit)
 }
 
 \author{
-   Aijun Zhang, Haoyu Li
+   Aijun Zhang, Haoyu Li, Shijie Quan
 }
 \references{
  Zhang, A. and Li, H. (2017). UniDOE: An R package for constructing uniform design of experiments via stochastic and adaptive threshold accepting algorithm. Technical Report.
@@ -33,6 +35,6 @@ Eval(X0,crit)
 
   x0 = matrix(c(1,1,1,2,2,2,3,3,3),nrow=3,byrow=TRUE)
   crit="MD2"
-  value = Eval(x0,crit)
+  value = DesignEval(x0,crit)
 
 }

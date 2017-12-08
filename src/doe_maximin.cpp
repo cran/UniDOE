@@ -93,14 +93,18 @@ double maximin_set(double **x0)
 	double d1,dt;
 	int i,j,k;
 	set_cnt=0;
+
 	if(!pmm) return(maximin_set_pinf(x0));
 	if(x0!=NULL)
 	{
-		for(i=0;i<nsamp;i++) for(j=0;j<nv;j++)
-		{
-			if(scaled) x[i][j]=scale[j]*x0[i][j];
-			else x[i][j]=x0[i][j];
-		}
+		for(i=0;i<nsamp;i++)
+		 {
+			for(j=0;j<nv;j++)
+				{
+					if(scaled) x[i][j]=scale[j]*x0[i][j];
+					else x[i][j]=x0[i][j];
+				}
+		 }
 	}
 	for(i=0;i<nsamp;i++)
 	{

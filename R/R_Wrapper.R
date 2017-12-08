@@ -1,4 +1,4 @@
-UDC <- function(n,s,q,init="rand",initX=matrix(0),crit="MD2",maxiter=10000,hits_ratio = 0.1,vis=FALSE)
+GenUD <- function(n,s,q,init="rand",initX=matrix(0),crit="MD2",maxiter=10000,hits_ratio = 0.1,vis=FALSE)
 {
   if(init=="input"){
     initX = as.matrix(initX)
@@ -16,11 +16,11 @@ UDC <- function(n,s,q,init="rand",initX=matrix(0),crit="MD2",maxiter=10000,hits_
   }else if((init == "orth") && ncol(initX) == s){stop(("\n If s = ncol(initX), then no update is proceeded."))}
 
   if(crit == "maximin"){crit=1}
-  else if(crit == "CL2"){crit=2}
+  else if(crit == "CD2"){crit=2}
   else{crit=3}
 
   #recall Rcpp compiled StoUDC function:
-  list <- StoUDC(n,s,q,init,initX,crit,maxiter,hits_ratio)
+  list <- SATA_UD(n,s,q,init,initX,crit,maxiter,hits_ratio)
   if(vis == TRUE){
     plot(list$obj_list,type="l")
     bst_score = list$obj
@@ -34,7 +34,7 @@ UDC <- function(n,s,q,init="rand",initX=matrix(0),crit="MD2",maxiter=10000,hits_
 }
 
 
-AUDC <- function (X0,n,crit="MD2",maxiter=10000,hits_ratio = 0.1,vis=FALSE)
+GenAUD <- function (X0,n,crit="MD2",maxiter=10000,hits_ratio = 0.1,vis=FALSE)
 {
   X0 = as.matrix(X0)
   s = ncol(X0)
@@ -47,11 +47,11 @@ AUDC <- function (X0,n,crit="MD2",maxiter=10000,hits_ratio = 0.1,vis=FALSE)
 
 
   if(crit == "maximin"){crit=1}
-  else if(crit == "CL2"){crit=2}
+  else if(crit == "CD2"){crit=2}
   else{crit=3}
 
   #recall Rcpp compiled StoAUDC function:
-  list <- StoAUDC(X0,n,s,q,init="rand",initX=matrix(0),crit,maxiter,hits_ratio)
+  list <- SATA_AUD(X0,n,s,q,init="rand",initX=matrix(0),crit,maxiter,hits_ratio)
   if(vis == TRUE){
     plot(list$obj_list,type="l")
     bst_score = list$obj
@@ -65,14 +65,14 @@ AUDC <- function (X0,n,crit="MD2",maxiter=10000,hits_ratio = 0.1,vis=FALSE)
 }
 
 
-LP<- function(X0=matrix(0),crit="MD2",maxiter=10000,hits_ratio = 0.1,vis=FALSE)
+GenLP<- function(X0=matrix(0),crit="MD2",maxiter=10000,hits_ratio = 0.1,vis=FALSE)
 {
   if(crit == "maximin"){crit=1}
-  else if(crit == "CL2"){crit=2}
+  else if(crit == "CD2"){crit=2}
   else{crit=3}
   X0 = as.matrix(X0)
   q = max(X0) - min(X0) + 1
-  list <- StoLP(X0,q,crit,maxiter,hits_ratio)
+  list <- SATA_LP(X0,q,crit,maxiter,hits_ratio)
   if(vis == TRUE){
     plot(list$obj_list,type="l")
     bst_score = list$obj
@@ -86,12 +86,13 @@ LP<- function(X0=matrix(0),crit="MD2",maxiter=10000,hits_ratio = 0.1,vis=FALSE)
 }
 
 
-Eval<-function(X0 = matrix(0), crit="MD2")
+DesignEval<-function(X0 = matrix(0), crit="MD2")
 {
   X0 = as.matrix(X0)
   q = max(X0) - min(X0) + 1
   if(crit == "MD2"){crit=0}
-  else{crit=1}
+  else if(crit == "CD2"){crit=1}
+  else{crit=2}
 
-  return(StoEval(X0,q,crit))
+  return(CritEval(X0,q,crit))
 }

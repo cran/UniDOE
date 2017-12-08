@@ -1,8 +1,8 @@
-\name{UDC}
-\alias{UDC}
-\title{Uniform Design Construction}
+\name{GenUD}
+\alias{GenUD}
+\title{Generating Uniform Design of Experiments}
 \usage{
-UDC(n,s,q,init,initX,crit,maxiter,hits_ratio,vis)
+GenUD(n,s,q,init,initX,crit,maxiter,hits_ratio,vis)
 }
 \description{
   This function takes n,s,q and other arguments to output a list(described below).
@@ -22,14 +22,13 @@ UDC(n,s,q,init,initX,crit,maxiter,hits_ratio,vis)
 
          "maximin" -- maximin Discrepancy ;
 
-         "CL2"  --Centered L2 Discrepancy ;
+         "CD2"  --Centered L2 Discrepancy ;
 
          "MD2"  --Mixture L2  Discrepancy ;}
 
-\item{maxiter}{a positive integer  R  object. Maximum iteration number in outer while loop of SOAT algorithm.}
+\item{maxiter}{a positive integer  R  object. Maximum iteration number in outer while loop of SATA algorithm.}
 
-
-\item{hits_ratio}{an float R object. Default value is 0.1, which is the ratio to accept changes of design in inner for loop. Details can be checked in (Zhang, A. and Li, H. (2017). UniDOE: an R package for uniform design construction via stochastic optimization.)}
+\item{hits_ratio}{an float R object. Default value is 0.1, which is the ratio to accept changes of design in inner for loop. Details can be checked in (Zhang, A. and Li, H. (2017). UniDOE: An R package for constructing uniform design of experiments via stochastic and adaptive threshold accepting algorithm. Technical Report.)}
 
 \item{vis}{an boolean R object. If true, plot the criterion value sequence.}
 
@@ -39,7 +38,7 @@ UDC(n,s,q,init,initX,crit,maxiter,hits_ratio,vis)
 }
 
 \author{
-   Aijun Zhang, Haoyu Li
+   Aijun Zhang, Haoyu Li, Shijie Quan
 }
 \references{
  Zhang, A. and Li, H. (2017). UniDOE: An R package for constructing uniform design of experiments via stochastic and adaptive threshold accepting algorithm. Technical Report.
@@ -48,11 +47,11 @@ UDC(n,s,q,init,initX,crit,maxiter,hits_ratio,vis)
 
 \examples{
 ##e.g.1
-n=12#(must be multiples of q)
+n=12 #(must be multiples of q)
 s=3
 q=4
 crit = "MD2"#(Mixture L2 criteria)
-list1=UDC(n,s,q,crit=crit,maxiter=100)
+res = GenUD(n,s,q,crit=crit,maxiter=100)
 
 ##e.g.2
 n=10 #(must be multiples of q)
@@ -61,7 +60,7 @@ q=5
 init = "rand"
 crit = "MD2" #(Mixture L2 criteria)
 vis=TRUE
-list1=UDC(n,s,q,init=init,crit=crit,maxiter=100,vis=vis)
+res=GenUD(n,s,q,init=init,crit=crit,maxiter=100,vis=vis)
 
 ##e.g.3
 #If init = "orth",
@@ -71,14 +70,14 @@ s=5
 q=3
 init = "orth"
 # initX should be orthogonal design with nrow=n&level=q
-initX = matrix(c(1,1,2,2,3,3,3,3,1,1,2,2),ncol=2)
-list = UDC(n,s,q,init=init,initX = initX,maxiter=100)
+initX = matrix(c(1,1,2,2,3,3,3,3,1,1,2,2), ncol=2)
+res = GenUD(n,s,q,init=init,initX = initX,maxiter=100)
 
 ##e.g.4
 #If init="input", algorithm will search for better a better design with same size as initX.
 init = "input"
 # initX should be orthogonal design with nrow=n&level=q
 initX = matrix(c(1,1,2,2,3,3,3,3,1,1,2,2),ncol=2)
-list = UDC(init=init,initX = initX,maxiter=100)
+res = GenUD(init=init,initX = initX,maxiter=100)
 
 }

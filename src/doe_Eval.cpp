@@ -1,21 +1,29 @@
 #include "doe_Eval.h"
 #include "doe_utility.h"
+#include "doe_Matrix.h"
+#include "doe_criteria.h"
 #include <string.h>
+#include <math.h>
 #include <Rcpp.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 using namespace Rcpp;
 using namespace std;
+#define DEF_PMM 20
 
 
 // [[Rcpp::export]]
-double StoEval(NumericMatrix X0, int q, int crit=0)
+double CritEval(NumericMatrix X0, int q, int crit=0)
 {
   switch(crit)
   {
   case 0:
     return MD2(X0,q);
   case 1:
-    return CL2(X0,q);
+    return CD2(X0,q);
+  case 2:
+    return maximin(X0,q);
   default:
     return MD2(X0,q);
   }
@@ -50,7 +58,7 @@ double MD2(NumericMatrix X0, int q)
   return result;
 }
 
-double CL2(NumericMatrix X0, int q)
+double CD2(NumericMatrix X0, int q)
 {
   int i,j,k,nsamp=X0.nrow(),nv=X0.ncol();
   double result=1,part1=0,part2=0,mul=1;
@@ -74,3 +82,48 @@ double CL2(NumericMatrix X0, int q)
   result = result + part1 + part2;
   return result;
 }
+
+double maximin(NumericMatrix X0, int q)
+{
+  double d1,dt,maxmm,minmm,mmres1,mmres,**x,**D;
+  int i,j,k,pmm,nsamp=X0.nrow(),nv=X0.ncol();
+  pmm = DEF_PMM;
+  minmm=pow(MINIDOUBLE,1.0/pmm);
+  maxmm=1.0/minmm;
+  x=NewDMatrix(nsamp,nv);
+  D=NewDMatrix(nsamp,nsamp);
+
+  pmm=(pmm+1)/2;
+
+  for(i=0;i<nsamp; i++)
+  {
+      for(j=0;j<nv;j++)  x[i][j] = (X0(i,j)-1.0)/(q-1) ;
+  }
+
+  for(i=0;i<nsamp;i++)
+  {
+    for(j=i+1;j<nsamp;j++)
+    {
+      dt=0;
+      for(k=0;k<nv;k++)
+      {
+        d1=x[i][k]-x[j][k];
+        dt+=d1*d1;
+      }
+      D[j][i]=D[i][j]=dt;
+      if(dt<minmm) D[j][i]=MAXDOUBLE;
+      else
+      {
+        D[j][i]=mult(dt,pmm);//for(k=0;k<pmm-1;k++) D[j][i]*=dt;
+        D[j][i]=1/D[j][i];
+      }
+    }
+  }
+  mmres1=0;
+  for(i=0;i<nsamp;i++) for(j=0;j<i;j++) mmres1+=D[i][j];
+  mmres1=MIN(MAXDOUBLE,mmres1);
+  mmres=pow(mmres1,1.0/pmm/2.0);
+  return(mmres);
+}
+
+

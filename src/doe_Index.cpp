@@ -69,7 +69,7 @@ void indexx(unsigned  int n, double arr[], unsigned  int indx[])
 			indx[l]=indx[j];
 			indx[j]=indxt;
 			jstack += 2;
-			if (jstack > NSTACK) nrerror("NSTACK too small in indexx.");
+			//if (jstack > NSTACK) nrerror("NSTACK too small in indexx.");
 			if (ir-i+1 >= j-l) {
 				istack[jstack]=ir;
 				istack[jstack-1]=i;
@@ -146,7 +146,7 @@ void indexx_int(unsigned  int n, int arr[], unsigned  int indx[])
 			indx[l]=indx[j];
 			indx[j]=indxt;
 			jstack += 2;
-			if (jstack > NSTACK) nrerror("NSTACK too small in indexx.");
+			//if (jstack > NSTACK) nrerror("NSTACK too small in indexx.");
 			if (ir-i+1 >= j-l) {
 				istack[jstack]=ir;
 				istack[jstack-1]=i;
