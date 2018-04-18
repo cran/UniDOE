@@ -23,6 +23,8 @@ double CritEval(NumericMatrix X0, int q, int crit=0)
   case 1:
     return CD2(X0,q);
   case 2:
+    return WD2(X0,q);
+  case 3:
     return maximin(X0,q);
   default:
     return MD2(X0,q);
@@ -80,6 +82,27 @@ double CD2(NumericMatrix X0, int q)
   }
   part2 *= (1.0/(nsamp*nsamp));
   result = result + part1 + part2;
+  
+  return result;
+}
+
+double WD2(NumericMatrix X0, int q)
+{
+  int i,j,k,nsamp=X0.nrow(),nv=X0.ncol();
+  double result=1,part1=0,mul=1;
+  NumericMatrix X(clone(X0));
+  for(i=0;i<nsamp;i++) for(j=0;j<nv;j++) X(i,j) = (X(i,j)-0.5)/q;
+  for(i=0;i<nv;i++) result *= 4/3.0;
+  result *= (-1.0);
+  for(i=0;i<nsamp;i++) for(j=0;j<nsamp;j++)
+  {
+    mul = 1.0;
+    for(k=0; k<nv; k++) mul *= (1.5 - ABS(X(i,k)-X(j,k)) * (1-ABS(X(i,k) - X(j,k))));
+    part1 += mul;
+  }
+  part1 *= (1.0/(nsamp*nsamp));
+  result += part1;
+
   return result;
 }
 

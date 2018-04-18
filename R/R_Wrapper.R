@@ -6,6 +6,11 @@ GenUD <- function(n,s,q,init="rand",initX=matrix(0),crit="MD2",maxiter=10000,hit
     s = ncol(initX)
     q = max(initX) - min(initX) + 1
   }
+  else if(init == "orth"){
+    initX = as.matrix(initX)
+    n = nrow(initX)
+    q = max(initX) - min(initX) + 1
+  }
   #restrictions for arguments:
   if(is.numeric(n)&&is.numeric(s)&&is.numeric(q) == FALSE){stop("Wrong types of n,s,q.")}
   else if(n%%q != 0){stop("n should be multiple of q. ")}
@@ -15,8 +20,11 @@ GenUD <- function(n,s,q,init="rand",initX=matrix(0),crit="MD2",maxiter=10000,hit
   stop(("\n The size of Orthogonal matrix mismatches with n,s,q ."))
   }else if((init == "orth") && ncol(initX) == s){stop(("\n If s = ncol(initX), then no update is proceeded."))}
 
+  
+
   if(crit == "maximin"){crit=1}
   else if(crit == "CD2"){crit=2}
+  else if(crit == "WD2"){crit=4}
   else{crit=3}
 
   #recall Rcpp compiled StoUDC function:
@@ -48,6 +56,7 @@ GenAUD <- function (X0,n,crit="MD2",maxiter=10000,hits_ratio = 0.1,vis=FALSE)
 
   if(crit == "maximin"){crit=1}
   else if(crit == "CD2"){crit=2}
+  else if(crit == "WD2"){crit=4}
   else{crit=3}
 
   #recall Rcpp compiled StoAUDC function:
@@ -69,6 +78,7 @@ GenLP<- function(X0=matrix(0),crit="MD2",maxiter=10000,hits_ratio = 0.1,vis=FALS
 {
   if(crit == "maximin"){crit=1}
   else if(crit == "CD2"){crit=2}
+  else if(crit == "WD2"){crit=4}
   else{crit=3}
   X0 = as.matrix(X0)
   q = max(X0) - min(X0) + 1
@@ -92,7 +102,9 @@ DesignEval<-function(X0 = matrix(0), crit="MD2")
   q = max(X0) - min(X0) + 1
   if(crit == "MD2"){crit=0}
   else if(crit == "CD2"){crit=1}
-  else{crit=2}
+  else if(crit == "WD2"){crit=2}
+  else if(crit == "maximin"){crit=3}
+  else{crit=0}
 
   return(CritEval(X0,q,crit))
 }

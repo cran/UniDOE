@@ -16,6 +16,8 @@ DesignEval(X0,crit)
 
               "CD2" -- CD2
 
+              "WD2" -- WD2
+
               "maximin" -- maximin
 
               Default: "MD2"}

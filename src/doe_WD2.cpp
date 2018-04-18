@@ -1,7 +1,7 @@
 #include "doe_Matrix.h"
 #include <math.h>
 #include "doe_criteria.h"
-#include "doe_MD2.h"
+#include "doe_WD2.h"
 #include "doe_utility.h"
 #include <stdio.h>
 #include "doe_Eval.h"
@@ -9,6 +9,7 @@
 #define DEF_SCALE 1.0
 #define DEF_PMM 6
 #define DEF_DIST 1
+#define DEBUG 0
 
 static double *scale;
 static char scaled;
@@ -20,11 +21,11 @@ static int nsamp;
 static double **x,**xc,**D,discr,**xf,*Df,discrfull;
 static double *xsnap,*xcsnap,*Dsnap,discrsnap;
 
-/* 
-  The structure of D (nsamp+1 * nsamp+1):
+/*
+  The structure of D (nsamp+1*nsamp+1):
   lower matrix is exactly a copy of upper matrix, except the nsamp column
 */
-void create_mxcl2( double **x0,int nnew1, int np1,int nv1,CRITOPT *critopt)
+void create_wdl2( double **x0, int nnew1, int np1, int nv1, CRITOPT *critopt)
 {
 	int i;
 	nv=nv1;
@@ -45,11 +46,11 @@ void create_mxcl2( double **x0,int nnew1, int np1,int nv1,CRITOPT *critopt)
 	Dsnap=NewDVector((np+nsamp+2)*(nnew+1)/2);
 	xf=NewDMatrix(nnew,nv);
 	Df=NewDVector((np+nsamp+2)*(nnew+1)/2);
-	mxcl2_set(x0);
+	wdl2_set(x0);
 }
 
 
-void free_mxcl2()
+void free_wdl2()
 {
 	FreeDMatrix(x);
 	FreeDMatrix(xc);
@@ -62,7 +63,7 @@ void free_mxcl2()
 }
 
 
-double mxcl2_set(double **x0)
+double wdl2_set(double **x0)
 {
 	double d1,d2;
 	int i,j,k,nsamp2;
@@ -88,32 +89,34 @@ double mxcl2_set(double **x0)
 	{
 		for(k=0,d1=1,d2=1;k<nv;k++)
 		{
-			d1*=((15-4*xc[i][k])/8.0);
-			d2*=(5.0/3-0.25*xc[i][k]-0.25*xc[i][k]*xc[i][k]);
+			d1 *= (3.0/2.0);
 		}
 		D[i][i]=d1/nsamp2;
-		D[nsamp][i]=D[i][nsamp]=-2*d2/nsamp; //D has nsamp+1 column
+		D[nsamp][i]=D[i][nsamp]=0; //D has nsamp+1 column
 		for(j=i+1;j<nsamp;j++)
 		{
 			for(k=0,d1=1;k<nv;k++)
 			{
 				d2=x[i][k]-x[j][k];
-				d1*=((15-2*xc[i][k]-2*xc[j][k]-6*ABS(d2)+4*d2*d2)/8);
-      }
+				d1*=( 1.5 - ABS(d2)*(1-ABS(d2)) );
+      		}
 			D[j][i]=D[i][j]=2*d1/nsamp2;
 		}
 	}
-	for(i=0,discr=1;i<nv;i++) discr*=(19.0/12.0);
-	for(i=0;i<nsamp+1;i++) 	for(j=i;j<nsamp+1;j++)	discr+=D[i][j];
+	for(i=0,discr=1;i<nv;i++) discr *= 4.0/3.0;
+	discr *= (-1);
+	for(i=0;i<nsamp+1;i++) for(j=i;j<nsamp+1;j++) discr+=D[i][j];
+
 	return(discr);
 }
 
 
-double mxcl2_cp_set(int ncol,int ncp,int *idx1,int *idx2)
+
+double wdl2_cp_set(int ncol,int ncp,int *idx1,int *idx2)
 {
 	int i1,i2,i,j;
-	double d1,d2,dd,da1,da2,db1,db2,t1,t2,tt,temp,diff;
-	diff=0;
+	double d1,d2,dd,da1,t1,t2,temp,diff;
+	diff=0.0;
 	for(j=0;j<ncp;j++)
 	{
 		i1=idx1[j]; i2=idx2[j];
@@ -123,27 +126,14 @@ double mxcl2_cp_set(int ncol,int ncp,int *idx1,int *idx2)
 			temp=xc[i1][ncol]; xc[i1][ncol]=xc[i2][ncol]; xc[i2][ncol]=temp;
 			continue;
 		}
-
-		t1=15-4*xc[i1][ncol]; t2=15-4*xc[i2][ncol];
-		tt=t2/t1; //alpha(i1,i2,k)
-		d1=20-3*xc[i1][ncol]-3*xc[i1][ncol]*xc[i1][ncol];
-		d2=20-3*xc[i2][ncol]-3*xc[i2][ncol]*xc[i2][ncol];
-		dd=d2/d1; //beta(i1,i2,k)
-		da1=D[i1][i1]*tt; da2=D[i2][i2]/tt;
-		db1=D[i1][nsamp]*dd; db2=D[i2][nsamp]/dd;
-
-		diff+=da1-D[i1][i1]+da2-D[i2][i2]+db1-D[i1][nsamp]+db2-D[i2][nsamp];
-		D[i1][i1]=da1; D[i2][i2]=da2;
-		D[nsamp][i1]=D[i1][nsamp]=db1; D[nsamp][i2]=D[i2][nsamp]=db2;
-
 		for(i=0;i<nsamp;i++)
 		{
 			if(i != i1 && i != i2)
 			{
 				t1=x[i][ncol]-x[i1][ncol];
 				t2=x[i][ncol]-x[i2][ncol];
-				d1 = 15-2*xc[i1][ncol]-2*xc[i][ncol]-6*ABS(t1)+4*t1*t1;
-				d2 = 15-2*xc[i2][ncol]-2*xc[i][ncol]-6*ABS(t2)+4*t2*t2;
+				d1 = 1 - (2.0/3)*ABS(t1) + (2.0/3)*t1*t1; //15-2*xc[i1][ncol]-2*xc[i][ncol]-6*ABS(t1)+4*t1*t1;
+				d2 = 1 - (2.0/3)*ABS(t2) + (2.0/3)*t2*t2; //15-2*xc[i2][ncol]-2*xc[i][ncol]-6*ABS(t2)+4*t2*t2;
 				dd=d2/d1;
 
 				da1=D[i][i1]*dd;
@@ -164,35 +154,25 @@ double mxcl2_cp_set(int ncol,int ncp,int *idx1,int *idx2)
 }
 
 
-double mxcl2_cp(int ncol,int ncp,int *idx1,int *idx2)
+
+double wdl2_cp(int ncol,int ncp,int *idx1,int *idx2)
 {
 	int i1,i2,i,j;
-	double d1,d2,dd,da1,da2,db1,db2,t1,t2,tt,diff,newdiscr,temp;
+	double d1,d2,dd,da1,t1,t2,diff,newdiscr,temp;
 	diff=0;
 	for(j=0;j<ncp;j++)
 	{
 		i1=idx1[j]; i2=idx2[j];
 		if(ABS(x[i1][ncol]-x[i2][ncol])<EPS2) continue;
-
-		t1=15-4*xc[i1][ncol]; t2=15-4*xc[i2][ncol];
-		tt=t2/t1; //alpha(i1,i2,k)
-		d1=20-3*xc[i1][ncol]-3*xc[i1][ncol]*xc[i1][ncol];
-		d2=20-3*xc[i2][ncol]-3*xc[i2][ncol]*xc[i2][ncol];
-		dd=d2/d1; //beta(i1,i2,k)
-		da1=D[i1][i1]*tt; da2=D[i2][i2]/tt;
-		db1=D[i1][nsamp]*dd; db2=D[i2][nsamp]/dd;
-
-		diff+=da1-D[i1][i1]+da2-D[i2][i2]+db1-D[i1][nsamp]+db2-D[i2][nsamp];
-
 		for(i=0;i<nsamp;i++)
 		{
 			if(i != i1 && i != i2)
 			{
 				t1=x[i][ncol]-x[i1][ncol];
 				t2=x[i][ncol]-x[i2][ncol];
-				d1 = 15-2*xc[i1][ncol]-2*xc[i][ncol]-6*ABS(t1)+4*t1*t1;
-				d2 = 15-2*xc[i2][ncol]-2*xc[i][ncol]-6*ABS(t2)+4*t2*t2;
-				dd=d2/d1;
+				d1 = 1 - (2.0/3)*ABS(t1) + (2.0/3)*t1*t1;//15-2*xc[i1][ncol]-2*xc[i][ncol]-6*ABS(t1)+4*t1*t1;
+				d2 = 1 - (2.0/3)*ABS(t2) + (2.0/3)*t2*t2;//15-2*xc[i2][ncol]-2*xc[i][ncol]-6*ABS(t2)+4*t2*t2;
+				dd = d2/d1;
 				if(i<i1)
 				{
 					da1=D[i][i1]*dd; diff+=da1-D[i][i1];
@@ -242,31 +222,23 @@ double mxcl2_cp(int ncol,int ncp,int *idx1,int *idx2)
 }
 
 
-double mxcl2_cp1(int ncol,int i1,int i2)
+
+
+double wdl2_cp1(int ncol,int i1,int i2)
 {
 	int i;
-	double d1,d2,dd,da1,da2,db1,db2,t1,t2,tt,diff,newdiscr;
+	double d1,d2,dd,t1,t2,diff,newdiscr;
 	if(ABS(x[i1][ncol]-x[i2][ncol])<EPS2) return(discr);
 
 	diff=0;
-	t1=15-4*xc[i1][ncol]; t2=15-4*xc[i2][ncol];
-	tt=t2/t1; //alpha(i1,i2,k)
-	d1=20-3*xc[i1][ncol]-3*xc[i1][ncol]*xc[i1][ncol];
-	d2=20-3*xc[i2][ncol]-3*xc[i2][ncol]*xc[i2][ncol];
-	dd=d2/d1; //beta(i1,i2,k)
-	da1=D[i1][i1]*tt; da2=D[i2][i2]/tt;
-	db1=D[i1][nsamp]*dd; db2=D[i2][nsamp]/dd;
-
-	diff+=da1-D[i1][i1]+da2-D[i2][i2]+db1-D[i1][nsamp]+db2-D[i2][nsamp];
-
 	for(i=0;i<nsamp;i++)
 	{
 		if(i != i1 && i != i2)
 		{
 			t1=x[i][ncol]-x[i1][ncol];
 			t2=x[i][ncol]-x[i2][ncol];
-			d1 = 15-2*xc[i1][ncol]-2*xc[i][ncol]-6*ABS(t1)+4*t1*t1;
-			d2 = 15-2*xc[i2][ncol]-2*xc[i][ncol]-6*ABS(t2)+4*t2*t2;
+			d1 = 1 - (2.0/3)*ABS(t1) + (2.0/3)*t1*t1;
+			d2 = 1 - (2.0/3)*ABS(t2) + (2.0/3)*t2*t2;
 			dd=d2/d1;
 			if(i<i1) diff+=D[i][i1]*dd-D[i][i1];
 			else diff+=D[i1][i]*dd-D[i1][i];
@@ -279,10 +251,12 @@ double mxcl2_cp1(int ncol,int i1,int i2)
 }
 
 
-double mxcl2_pm(int ncol, int npm,int *idx1,int *idx2)
+
+
+double wdl2_pm(int ncol, int npm,int *idx1,int *idx2)
 {
 	int i1,i2,i,j;
-	double d1,d2,dd,da1,db1,t1,t2,tt,diff,newdiscr,*xt,*xct;
+	double d1,d2,dd,da1,t1,t2,diff,newdiscr,*xt,*xct;
 	xt=NewDVector(npm); xct=NewDVector(npm);
 	for(i=0;i<npm;i++) {xt[i]=x[idx2[i]][ncol]; xct[i]=xc[idx2[i]][ncol];}
 	diff=0;
@@ -291,23 +265,14 @@ double mxcl2_pm(int ncol, int npm,int *idx1,int *idx2)
 	{
 		i1=idx1[j];
 		if(ABS(x[i1][ncol]-xt[j])<EPS2) continue;
-		t1=15-4*xc[i1][ncol]; t2=15-4*xct[j]; tt=t2/t1;
-		d1=20-3*xc[i1][ncol]-3*xc[i1][ncol]*xc[i1][ncol];
-		d2=20-3*xct[j]-3*xct[j]*xct[j];
-		dd=d2/d1;
-		da1=D[i1][i1]*tt;  db1=D[i1][nsamp]*dd;
-		diff+=da1-D[i1][i1]+db1-D[i1][nsamp];
-
 		for(i=0;i<nsamp;i++)
 		{
 			if(i != i1)
 			{
 				t1=x[i][ncol]-x[i1][ncol];
 				t2=x[i][ncol]-xt[j];
-				//d1 = 2+xc[i1][ncol]+xc[i][ncol]-ABS(t1);
-				//d2 = 2+xct[j]+xc[i][ncol]-ABS(t2);
-				d1 = 15-2*xc[i1][ncol]-2*xc[i][ncol]-6*ABS(t1)+4*t1*t1;
-				d2 = 15-2*xct[j]-2*xc[i][ncol]-6*ABS(t2)+4*t2*t2;
+				d1 = 1 - (2.0/3)*ABS(t1) + (2.0/3)*t1*t1;
+				d2 = 1 - (2.0/3)*ABS(t2) + (2.0/3)*t2*t2;
 				dd=d2/d1;
 				if(i<i1)
 				{
@@ -346,10 +311,12 @@ double mxcl2_pm(int ncol, int npm,int *idx1,int *idx2)
 }
 
 
-double mxcl2_pm_set(int ncol, int npm,int *idx1,int *idx2)
+
+
+double wdl2_pm_set(int ncol, int npm,int *idx1,int *idx2)
 {
 	int i1,i,j;
-	double d1,d2,dd,da1,db1,t1,t2,tt,diff,*xt,*xct;
+	double d1,d2,dd,da1,t1,t2,diff,*xt,*xct;
 	xt=NewDVector(npm); xct=NewDVector(npm);
 	for(i=0;i<npm;i++) {xt[i]=x[idx2[i]][ncol]; xct[i]=xc[idx2[i]][ncol];}
 	diff=0;
@@ -361,22 +328,14 @@ double mxcl2_pm_set(int ncol, int npm,int *idx1,int *idx2)
 			x[i1][ncol]=xt[j]; xc[i1][ncol]=xct[j];
 			continue;
 		}
-		t1=15-4*xc[i1][ncol]; t2=15-4*xct[j]; tt=t2/t1;
-		d1=20-3*xc[i1][ncol]-3*xc[i1][ncol]*xc[i1][ncol];
-		d2=20-3*xct[j]-3*xct[j]*xct[j];
-		dd=d2/d1;
-		da1=D[i1][i1]*tt;  db1=D[i1][nsamp]*dd;
-		diff+=da1-D[i1][i1]+db1-D[i1][nsamp];
-		D[i1][i1]=da1; D[nsamp][i1]=D[i1][nsamp]=db1;
-
 		for(i=0;i<nsamp;i++)
 		{
 			if(i != i1)
 			{
 				t1=x[i][ncol]-x[i1][ncol];
 				t2=x[i][ncol]-xt[j];
-				d1 = 15-2*ABS(xc[i1][ncol])-2*ABS(xc[i][ncol])-6*ABS(t1)+4*t1*t1;
-				d2 = 15-2*ABS(xct[j])-2*ABS(xc[i][ncol])-6*ABS(t2)+4*t2*t2;
+				d1 = 1 - (2.0/3)*ABS(t1) + (2.0/3)*t1*t1;
+				d2 = 1 - (2.0/3)*ABS(t2) + (2.0/3)*t2*t2;
                 dd=d2/d1;
 				da1=D[i][i1]*dd;
 				diff+=da1-D[i][i1];
@@ -392,13 +351,15 @@ double mxcl2_pm_set(int ncol, int npm,int *idx1,int *idx2)
 }
 
 
-double mxcl2()
+
+double wdl2()
 {
 	return(discr);
 }
 
 
-double **mxcl2_x(double **xnew)
+
+double **wdl2_x(double **xnew)
 {
 	int i,j;
 	if(xnew==NULL) return(x);
@@ -412,7 +373,8 @@ double **mxcl2_x(double **xnew)
 }
 
 
-void mxcl2_snap(int ncol)
+
+void wdl2_snap(int ncol)
 {
 	int i,j,k;
 	discrsnap=discr;
@@ -423,11 +385,11 @@ void mxcl2_snap(int ncol)
 	}
 	for(k=0,i=np;i<nsamp+1;i++)
 		for(j=0;j<=i;j++,k++) Dsnap[k]=D[i][j];
-
 }
 
 
-void mxcl2_reset(int ncol)
+
+void wdl2_reset(int ncol)
 {
 	int i,j,k;
 	discr=discrsnap;
@@ -442,7 +404,8 @@ void mxcl2_reset(int ncol)
 }
 
 
-double mxcl2_eval(double **x0)
+
+double wdl2_eval(double **x0)
 {
 	double d1,d2,newdiscr,**x1,**xc1,**D1;
 	int i,j,k,nsamp2;
@@ -472,22 +435,22 @@ double mxcl2_eval(double **x0)
 	{
 		for(k=0,d1=1,d2=1;k<nv;k++)
 		{
-			d1*=(15-4*xc1[i][k])/8.0;
-			d2*=(20-3*xc1[i][k]-3*xc1[i][k]*xc1[i][k])/12.0;
+			d1*= (3.0/2);
 		}
 		D1[i][i]=d1/nsamp2;
-		D1[i][nsamp]=-2*d2/nsamp; //D1 has nsamp+1 column
+		D1[i][nsamp]=0; //D1 has nsamp+1 column
 		for(j=i+1;j<nsamp;j++)
 		{
 			for(k=0,d1=1;k<nv;k++)
 			{
 				d2=x1[i][k]-x1[j][k];
-				d1*=(15-2*xc1[i][k]-2*xc1[j][k]-6*ABS(d2)+4*d2*d2)/8.0;
+				d1*=( (1 - (2.0/3)*ABS(d2) + (2.0/3)*d2*d2) * (3.0/2) );
 			}
 			D1[j][i]=D1[i][j]=2*d1/nsamp2;//question: Why times two here?
 		}
 	}
-	for(i=0,newdiscr=1;i<nv;i++) newdiscr*=(19.0/12.0);
+	for(i=0,newdiscr=1;i<nv;i++) newdiscr*=(4.0/3.0);
+	newdiscr = (-1) * newdiscr;
 	for(i=0;i<nsamp+1;i++) 	for(j=i;j<nsamp+1;j++)	newdiscr+=D1[i][j];
 	FreeDMatrix(D1);
 	FreeDMatrix(x1);
@@ -496,7 +459,8 @@ double mxcl2_eval(double **x0)
 }
 
 
-void mxcl2_full_snap()
+
+void wdl2_full_snap()
 {
 	int i,j,k;
 	discrfull=discr;
@@ -507,7 +471,9 @@ void mxcl2_full_snap()
 }
 
 
-void mxcl2_full_reset()
+
+
+void wdl2_full_reset()
 {
 	int i,j,k;
 	discr=discrfull;
@@ -528,7 +494,7 @@ void mxcl2_full_reset()
 }
 
 
-void mxcl2_global_x(double **xnew)
+void wdl2_global_x(double **xnew)
 {
 	int i,j;
 	for(j=0;j<nv;j++)
@@ -538,3 +504,4 @@ void mxcl2_global_x(double **xnew)
 	}
 	if(scaled) for(i=0;i<nsamp;i++) for(j=0;j<nv;j++) xnew[i][j]/=scale[j];
 }
+

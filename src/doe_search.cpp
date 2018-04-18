@@ -14,7 +14,7 @@
 #include "doe_DesignInfo.h"
 #include "doe_CL2.h"
 using namespace std;
-#define DEBUG 0
+#define DEBUG 1
 typedef struct
 {
 	char type;
@@ -120,7 +120,7 @@ void create_search(double **x,int nnew1,int np1,int nv1,SEARCHOPT *options)
 		//printf("In create_search of search.cpp before checkSymm, issymm = %d \n",issymm);
 	#endif
 	//if(issymm) issymm=checkSymm();
-  #if DEBUG
+ 	#if DEBUG
 		//printf("In create_search of search.cpp after checkSymm, issymm = %d \n",issymm);
 	#endif
 	create_permute_table();

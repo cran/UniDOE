@@ -10,5 +10,5 @@ data(UD_CD2)
 \format{
 A list containing (n,s,q,CD2,WD2) and the design matrix
 }
-\source{\url{http://www.cms-ud.com/}}
+
 

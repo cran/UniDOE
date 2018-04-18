@@ -12,11 +12,10 @@
 #include <math.h>
 #include <algorithm>// std::random_shuffle
 #include <vector>// std::vector
-//#include <cstdlib> // std::rand, std::srand
 #include <ctime> // std::time
 using namespace Rcpp;
 using namespace std;
-
+//CD2 related criteria. options.isnorm should be between 0~2. i.e. options.isnorm=cCheckValue(0,2,2,options.isnorm);
 
 double **x;
 static int RAND_STEP = 999;
@@ -283,7 +282,7 @@ void free_critopt()
 int check_pars(int nv,int nnew)
 {
 	int i;
-	critopt.type=cCheckValue(1,3,3,critopt.type); //HAVE BEEN CHANGED FROM cCheckValue(0,4,1,critopt.type)
+	critopt.type=cCheckValue(1,4,3,critopt.type); //HAVE BEEN CHANGED FROM cCheckValue(0,4,1,critopt.type)
 	critopt.ismax=cCheckValue(0,1,0,critopt.ismax);
 	critopt.npars[0]=iCheckValue(0,200,0,critopt.npars[0]);
 	critopt.npars[1]=iCheckValue(0,200,0,critopt.npars[1]);
@@ -297,7 +296,7 @@ int check_pars(int nv,int nnew)
   //options.maxpairs is J in paper, i.e. number of exchanges searched in one inner iteration.
 	options.maxpairs=iCheckValue(1,nnew*(nnew-1)/2,50,options.maxpairs);
 
-	if(critopt.type==2 || critopt.type==3) options.isnorm=cCheckValue(0,2,2,options.isnorm);//HAVE BEEN CHANGED FROM critopt.type==2
+	if(critopt.type==2 || critopt.type==3 || critopt.type==4) options.isnorm=cCheckValue(0,2,2,options.isnorm);//HAVE BEEN CHANGED FROM critopt.type==2
   else options.isnorm=cCheckValue(0,2,1,options.isnorm);
 	//options.issymm=cCheckValue(0,1,0,options.issymm);
 	options.israndcol=cCheckValue(0,1,0,options.israndcol);

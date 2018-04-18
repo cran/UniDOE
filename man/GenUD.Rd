@@ -24,6 +24,8 @@ GenUD(n,s,q,init,initX,crit,maxiter,hits_ratio,vis)
 
          "CD2"  --Centered L2 Discrepancy ;
 
+         "WD2" -- Wrap-around L2 Discrepancy;
+
          "MD2"  --Mixture L2  Discrepancy ;}
 
 \item{maxiter}{a positive integer  R  object. Maximum iteration number in outer while loop of SATA algorithm.}
@@ -65,13 +67,11 @@ res=GenUD(n,s,q,init=init,crit=crit,maxiter=100,vis=vis)
 ##e.g.3
 #If init = "orth",
 #algorithm will fix columns of initX and expand total number of columns to s for final design.
-n=6
 s=5
-q=3
 init = "orth"
 # initX should be orthogonal design with nrow=n&level=q
 initX = matrix(c(1,1,2,2,3,3,3,3,1,1,2,2), ncol=2)
-res = GenUD(n,s,q,init=init,initX = initX,maxiter=100)
+res = GenUD(s=s,init=init,initX = initX,maxiter=100)
 
 ##e.g.4
 #If init="input", algorithm will search for better a better design with same size as initX.

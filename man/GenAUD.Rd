@@ -17,6 +17,8 @@ GenAUD(X0,n,crit,maxiter,hits_ratio,vis)
 
       "CD2"     --Centered L2 Discrepancy;
 
+      "WD2" -- Wrap-around L2 Discrepancy;
+
       "MD2"     --Mixture L2  Discrepancy;}
 
 \item{maxiter}{a positive integer  R  object. Maximum iteration number in outer while loop of SOAT algorithm.}

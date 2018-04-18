@@ -16,6 +16,8 @@ Function for generating uniform designs by level permutation. It can be also use
 
   "CL2"  --Centered L2 Discrepancy ;
 
+  "WD2" -- Wrap-around L2 Discrepancy;
+
   "MD2"  --Mixture L2  Discrepancy ;}
 
 \item{maxiter}{a positive integer  R  object}
